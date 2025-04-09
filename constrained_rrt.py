@@ -7,12 +7,12 @@ from pytransform3d.rotations import quaternion_slerp, matrix_from_quaternion
 from pytransform3d.transformations import plot_transform
 
 class RRTStarConstrained:
-    def __init__(self, start, goal, plant_height, half_height, max_iterations=10000, step_size=0.05, radius=0.1):
+    def __init__(self, start, goal, plant_height, safe_height, max_iterations=10000, step_size=0.05, radius=0.1):
         # Define parameters
         self.start =start#[0.63, -0.16, 0.40]  # Start point in task space (x, y, z)
         self.goal =goal# [0.57, -0.43, 0.26]   # Goal point in task space (x, y, z)
         self.plant_height = plant_height#0.48       # Maximum height of the plant
-        self.half_height = half_height #0.25        # Half the height of the plant
+        self.safe_height = safe_height #0.25        # safe height limit 
 
         self.max_iterations = max_iterations
         self.step_size = step_size
@@ -23,14 +23,14 @@ class RRTStarConstrained:
         self.goal_region=0.05
     def is_within_bounds(self, point):
         """Check if a point is within task space bounds."""
-        return self.half_height <= point[2] <= self.plant_height
+        return self.safe_height <= point[2] <= self.plant_height
 
     def sample_task_space(self):
          while True:
             """Sample a random point within task space bounds."""
             x = random.uniform(0,1) #(0.3, 0.6)  # Modify as per your workspace dimensions
             y = random.uniform(-0.5,0.5)                                               
-            z = random.uniform(self.half_height, self.plant_height)
+            z = random.uniform(self.safe_height, self.plant_height)
             #if np.sqrt((x-self.start[0])**2 + (y-self.start[1])**2 + z**2) <= self.plant_height:
             return np.array([x, y, z])
       
@@ -187,10 +187,10 @@ class RRTStarConstrained:
 start = [0.66, 0.046, 0.52]  # Start point in task space (x, y, z)
 goal = [0.46, -0.47, 0.36]   # Goal point in task space (x, y, z)
 plant_height = 0.52      # Maximum height of the plant
-half_height = 0.25        # Half the height of the plant
+safe_height = 0.25        # safe height of the plant
 
 # Create RRT* planner
-rrt_star = RRTStarConstrained(start, goal, plant_height, half_height)
+rrt_star = RRTStarConstrained(start, goal, plant_height, safe_height)
 
 # Plan a path
 path = rrt_star.plan()
